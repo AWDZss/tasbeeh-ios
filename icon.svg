@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="108" fill="#123b35"/>
+  <circle cx="256" cy="256" r="158" fill="none" stroke="#d9a441" stroke-width="32"/>
+  <circle cx="256" cy="98" r="25" fill="#f7f4ee"/>
+  <circle cx="256" cy="414" r="25" fill="#f7f4ee"/>
+  <circle cx="98" cy="256" r="25" fill="#f7f4ee"/>
+  <circle cx="414" cy="256" r="25" fill="#f7f4ee"/>
+  <circle cx="144" cy="144" r="20" fill="#f7f4ee" opacity=".9"/>
+  <circle cx="368" cy="144" r="20" fill="#f7f4ee" opacity=".9"/>
+  <circle cx="144" cy="368" r="20" fill="#f7f4ee" opacity=".9"/>
+  <circle cx="368" cy="368" r="20" fill="#f7f4ee" opacity=".9"/>
+  <text x="256" y="286" text-anchor="middle" fill="#f7f4ee" font-family="Tahoma, Arial, sans-serif" font-size="86" font-weight="700">ذكر</text>
+</svg>

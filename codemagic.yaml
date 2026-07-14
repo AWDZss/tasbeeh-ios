@@ -1,0 +1,59 @@
+workflows:
+  ios-capacitor-release:
+    name: Tasbeeh iOS Capacitor Release
+    max_build_duration: 60
+    instance_type: mac_mini_m2
+    environment:
+      node: latest
+      xcode: latest
+      cocoapods: default
+      groups:
+        - app_store_connect
+      vars:
+        BUNDLE_ID: "com.ibrahim.tasbeeh"
+        XCODE_PROJECT: "ios/App/App.xcodeproj"
+        XCODE_SCHEME: "App"
+        APP_STORE_APPLE_ID: ""
+    scripts:
+      - name: Install npm dependencies
+        script: |
+          npm ci
+      - name: Sync Capacitor iOS project
+        script: |
+          npm run build
+          npx cap sync ios
+      - name: Install CocoaPods if needed
+        script: |
+          if [ -f ios/App/Podfile ]; then
+            cd ios/App
+            pod install
+          else
+            echo "No Podfile found. Using Swift Package Manager dependencies."
+          fi
+      - name: Resolve Swift packages
+        script: |
+          xcodebuild -resolvePackageDependencies \
+            -project "$XCODE_PROJECT" \
+            -scheme "$XCODE_SCHEME"
+      - name: Set up code signing
+        script: |
+          keychain initialize
+          app-store-connect fetch-signing-files "$BUNDLE_ID" --type IOS_APP_STORE --create
+          keychain add-certificates
+          xcode-project use-profiles
+      - name: Build IPA
+        script: |
+          xcode-project build-ipa \
+            --project "$XCODE_PROJECT" \
+            --scheme "$XCODE_SCHEME"
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+      - $HOME/Library/Developer/Xcode/DerivedData/**/Build/**/*.app
+      - $HOME/Library/Developer/Xcode/DerivedData/**/Build/**/*.dSYM
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: false
+        submit_to_app_store: false
+        apple_id: $APP_STORE_APPLE_ID
