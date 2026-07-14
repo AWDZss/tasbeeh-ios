@@ -13,7 +13,6 @@ workflows:
         BUNDLE_ID: "com.ibrahim.tasbeeh"
         XCODE_PROJECT: "ios/App/App.xcodeproj"
         XCODE_SCHEME: "App"
-        APP_STORE_APPLE_ID: ""
     scripts:
       - name: Install npm dependencies
         script: |
