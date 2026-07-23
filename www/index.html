@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
     <meta name="theme-color" content="#123b35" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -20,9 +20,6 @@
           <p class="eyebrow">ذكر اليوم</p>
           <h1>تسبيح</h1>
         </div>
-        <button class="icon-button" id="soundToggle" type="button" aria-label="تشغيل الاهتزاز">
-          <span aria-hidden="true">♪</span>
-        </button>
       </section>
 
       <section class="dhikr-panel" aria-live="polite">
@@ -32,9 +29,21 @@
           <p class="dhikr-subtitle" id="dhikrSubtitle">املأ وقتك بذكر خفيف على اللسان</p>
         </div>
         <button class="chip-nav" id="nextDhikr" type="button" aria-label="الذكر التالي">›</button>
+        <div class="dhikr-tools">
+          <button class="dhikr-tool-button add-tool-button" id="addDhikrToggle" type="button">إضافة</button>
+          <button class="dhikr-tool-button delete-tool-button" id="deleteDhikrButton" type="button">حذف</button>
+        </div>
       </section>
 
       <section class="counter-card">
+        <form class="lap-target-form" id="lapTargetForm">
+          <label for="lapTargetInput">عدد التسبيحات في اللفة</label>
+          <div class="lap-target-row">
+            <input id="lapTargetInput" type="number" min="1" max="99999" inputmode="numeric" autocomplete="off" />
+            <button type="submit">حفظ</button>
+          </div>
+        </form>
+
         <div class="progress-ring" aria-hidden="true">
           <svg viewBox="0 0 220 220">
             <circle class="ring-bg" cx="110" cy="110" r="98"></circle>
@@ -49,23 +58,11 @@
         <button class="tap-button" id="tapButton" type="button">
           اضغط للتسبيح
         </button>
-
-        <div class="actions">
-          <button class="secondary-button" id="resetButton" type="button">تصفير</button>
-          <button class="secondary-button" id="undoButton" type="button">تراجع</button>
-        </div>
-      </section>
-
-      <section class="targets" aria-label="اختيار الهدف">
-        <button class="target-pill is-active" type="button" data-target="33">33</button>
-        <button class="target-pill" type="button" data-target="99">99</button>
-        <button class="target-pill" type="button" data-target="100">100</button>
-        <button class="target-pill" type="button" data-target="1000">1000</button>
       </section>
 
       <section class="stats">
         <div>
-          <span class="stat-label">جلسات اليوم</span>
+          <span class="stat-label">لفات هذا الذكر</span>
           <strong id="sessionsToday">0</strong>
         </div>
         <div>
@@ -74,6 +71,20 @@
         </div>
       </section>
     </main>
+
+    <div class="modal-overlay is-hidden" id="customDhikrModal" aria-hidden="true">
+      <form class="custom-dhikr-form modal-card" id="customDhikrForm">
+        <div class="modal-header">
+          <h2>إضافة ذكر جديد</h2>
+          <button class="modal-close" id="closeDhikrModal" type="button" aria-label="إغلاق">×</button>
+        </div>
+        <label class="custom-dhikr-label" for="customDhikrInput">اكتب ذكر جديد</label>
+        <input id="customDhikrInput" type="text" maxlength="80" autocomplete="off" placeholder="مثال: سبحان الله وبحمده" />
+        <label class="custom-dhikr-label" for="customDhikrBenefitInput">فائدة الذكر</label>
+        <input id="customDhikrBenefitInput" type="text" maxlength="120" autocomplete="off" placeholder="اكتب فائدة الذكر" />
+        <button class="add-dhikr-button" type="submit">حفظ الذكر</button>
+      </form>
+    </div>
 
     <script src="app.js"></script>
   </body>

@@ -10,6 +10,7 @@ const files = [
   "app.js",
   "manifest.webmanifest",
   "icon.svg",
+  "reset-cache.html",
   "sw.js",
 ];
 

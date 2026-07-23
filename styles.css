@@ -17,6 +17,10 @@
   -webkit-tap-highlight-color: transparent;
 }
 
+html {
+  touch-action: manipulation;
+}
+
 body {
   margin: 0;
   min-height: 100vh;
@@ -26,12 +30,14 @@ body {
   color: var(--ink);
   display: grid;
   place-items: center;
+  touch-action: manipulation;
 }
 
 button {
   border: 0;
   font: inherit;
   cursor: pointer;
+  touch-action: manipulation;
 }
 
 .app {
@@ -44,7 +50,6 @@ button {
 }
 
 .topbar,
-.dhikr-panel,
 .stats {
   display: flex;
   align-items: center;
@@ -79,12 +84,44 @@ h1 {
 }
 
 .dhikr-panel {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
   gap: 12px;
   padding: 14px;
   border: 1px solid var(--line);
   border-radius: 18px;
   background: rgba(255, 255, 255, 0.72);
   backdrop-filter: blur(18px);
+}
+
+.dhikr-tools {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  width: 100%;
+}
+
+.dhikr-tool-button {
+  min-height: 38px;
+  border-radius: 10px;
+  color: #ffffff;
+  font-size: 0.9rem;
+  font-weight: 900;
+}
+
+.add-tool-button {
+  background: #1f7a5d;
+}
+
+.delete-tool-button {
+  background: #c93535;
+}
+
+.delete-tool-button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 
 .dhikr-copy {
@@ -105,6 +142,104 @@ h1 {
   line-height: 1.5;
 }
 
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.is-hidden {
+  display: none;
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(16, 32, 29, 0.42);
+  backdrop-filter: blur(8px);
+}
+
+.modal-overlay.is-hidden {
+  display: none;
+}
+
+.modal-card {
+  width: min(100%, 360px);
+  display: grid;
+  gap: 10px;
+  padding: 18px;
+  border-radius: 18px;
+  background: var(--surface);
+  box-shadow: 0 26px 70px rgba(18, 59, 53, 0.26);
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.modal-header h2 {
+  margin: 0;
+  color: var(--primary);
+  font-size: 1.15rem;
+}
+
+.modal-close {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #eef4f1;
+  color: var(--primary);
+  font-size: 1.3rem;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.custom-dhikr-label {
+  color: var(--primary);
+  font-size: 0.95rem;
+  font-weight: 800;
+}
+
+.custom-dhikr-form input {
+  min-width: 0;
+  min-height: 48px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.78);
+  color: var(--ink);
+  font: inherit;
+  font-weight: 700;
+  padding: 0 14px;
+  outline: none;
+}
+
+.custom-dhikr-form input:focus {
+  border-color: rgba(31, 107, 95, 0.45);
+  box-shadow: 0 0 0 4px rgba(31, 107, 95, 0.1);
+}
+
+.add-dhikr-button {
+  min-height: 48px;
+  border-radius: 14px;
+  background: var(--primary);
+  color: #ffffff;
+  font-weight: 800;
+  padding: 0 16px;
+}
+
 .counter-card {
   padding: 24px 20px 20px;
   border-radius: 28px;
@@ -112,6 +247,50 @@ h1 {
   box-shadow: var(--shadow);
   display: grid;
   gap: 18px;
+}
+
+.lap-target-form {
+  display: grid;
+  gap: 8px;
+}
+
+.lap-target-form label {
+  color: var(--primary);
+  font-size: 0.95rem;
+  font-weight: 900;
+}
+
+.lap-target-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+}
+
+.lap-target-row input {
+  min-width: 0;
+  min-height: 46px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: #f7faf8;
+  color: var(--ink);
+  font: inherit;
+  font-weight: 900;
+  padding: 0 14px;
+  outline: none;
+}
+
+.lap-target-row input:focus {
+  border-color: rgba(31, 107, 95, 0.45);
+  box-shadow: 0 0 0 4px rgba(31, 107, 95, 0.1);
+}
+
+.lap-target-row button {
+  min-height: 46px;
+  border-radius: 14px;
+  background: var(--primary);
+  color: #ffffff;
+  font-weight: 900;
+  padding: 0 18px;
 }
 
 .progress-ring {
@@ -178,31 +357,6 @@ h1 {
 
 .tap-button:active {
   transform: scale(0.985);
-}
-
-.actions,
-.targets {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
-}
-
-.secondary-button,
-.target-pill {
-  min-height: 46px;
-  border-radius: 14px;
-  background: #eef4f1;
-  color: var(--primary);
-  font-weight: 800;
-}
-
-.targets {
-  grid-template-columns: repeat(4, 1fr);
-}
-
-.target-pill.is-active {
-  background: var(--primary);
-  color: white;
 }
 
 .stats {
