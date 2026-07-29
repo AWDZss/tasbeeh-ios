@@ -11,6 +11,7 @@ const files = [
   "manifest.webmanifest",
   "icon.svg",
   "reset-cache.html",
+  "learning-test.html",
   "sw.js",
 ];
 

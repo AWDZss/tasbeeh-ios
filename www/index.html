@@ -20,9 +20,13 @@
           <p class="eyebrow">ذكر اليوم</p>
           <h1>تسبيح</h1>
         </div>
+        <div class="top-actions">
+          <button class="top-action-button" id="openLearningPage" type="button">جميع الأذكار</button>
+          <button class="top-action-button" id="openProgressPage" type="button">التقدم</button>
+        </div>
       </section>
 
-      <section class="dhikr-panel" aria-live="polite">
+      <section class="dhikr-panel" id="dhikrPanel" aria-live="polite" role="button" tabindex="0" aria-label="فتح قائمة الأذكار">
         <button class="chip-nav" id="prevDhikr" type="button" aria-label="الذكر السابق">‹</button>
         <div class="dhikr-copy">
           <p class="dhikr-title" id="dhikrTitle">سبحان الله</p>
@@ -36,13 +40,16 @@
       </section>
 
       <section class="counter-card">
-        <form class="lap-target-form" id="lapTargetForm">
+        <form class="lap-target-form is-collapsed" id="lapTargetForm">
           <label for="lapTargetInput">عدد التسبيحات في اللفة</label>
           <div class="lap-target-row">
             <input id="lapTargetInput" type="number" min="1" max="99999" inputmode="numeric" autocomplete="off" />
             <button type="submit">حفظ</button>
           </div>
         </form>
+        <button class="lap-target-compact" id="lapTargetCompact" type="button">
+          عدد التسبيحات: <span id="lapTargetCompactValue">33</span>
+        </button>
 
         <div class="progress-ring" aria-hidden="true">
           <svg viewBox="0 0 220 220">
@@ -85,6 +92,99 @@
         <button class="add-dhikr-button" type="submit">حفظ الذكر</button>
       </form>
     </div>
+
+    <div class="dhikr-list-page is-hidden" id="dhikrListPage" aria-hidden="true">
+      <section class="dhikr-list-card">
+        <div class="modal-header">
+          <h2>كل الأذكار</h2>
+          <button class="modal-close" id="closeDhikrList" type="button" aria-label="إغلاق">×</button>
+        </div>
+        <div class="dhikr-list-body" id="dhikrListBody"></div>
+      </section>
+    </div>
+
+    <div class="progress-page is-hidden" id="progressPage" aria-hidden="true">
+      <section class="progress-card">
+        <div class="modal-header">
+          <h2>تقدم التسبيح</h2>
+          <button class="modal-close" id="closeProgressPage" type="button" aria-label="إغلاق">×</button>
+        </div>
+        <div class="weekly-summary">
+          <div>
+            <span class="stat-label">تسبيح هذا الأسبوع</span>
+            <strong id="weeklyTotal">0</strong>
+          </div>
+          <div>
+            <span class="stat-label">معدل اليوم</span>
+            <strong id="weeklyAverage">0</strong>
+          </div>
+        </div>
+        <div class="circle-chart" id="weeklyCircleChart"></div>
+        <div class="daily-list" id="dailyProgressList"></div>
+      </section>
+    </div>
+
+    <div class="learning-page is-hidden" id="learningPage" aria-hidden="true">
+      <section class="learning-card">
+        <div class="modal-header">
+          <div>
+            <h2>جميع الأذكار</h2>
+            <span class="learning-step" id="learningStepLabel">الصباح والمساء: 1 من 8</span>
+          </div>
+          <button class="modal-close" id="closeLearningPage" type="button" aria-label="إغلاق">×</button>
+        </div>
+        <div class="learning-tabs" id="learningTabs">
+          <button class="learning-tab is-active" type="button" data-category="morningEvening">الصباح والمساء</button>
+          <button class="learning-tab" type="button" data-category="once">مرة واحدة</button>
+          <button class="learning-tab" type="button" data-category="protection">التحصين</button>
+          <button class="learning-tab" type="button" data-category="custom">تخصيص</button>
+        </div>
+        <article class="learning-dhikr-card">
+          <p class="label">الذكر الحالي</p>
+          <h3 id="learningDhikrText">بسم الله</h3>
+          <p class="learning-benefit" id="learningBenefitText"></p>
+          <p class="learning-source" id="learningSourceText"></p>
+          <div class="learning-stats">
+            <div>
+              <span>لفة</span>
+              <strong id="learningCountText">0</strong>
+            </div>
+            <div class="learning-target-stat" id="learningTargetStat" role="button" tabindex="0" aria-label="تعديل عدد الذكر">
+              <span>عداد</span>
+              <strong id="learningTargetText">1</strong>
+            </div>
+          </div>
+          <div class="learning-progress" aria-hidden="true">
+            <span id="learningProgressFill"></span>
+          </div>
+          <p class="learning-message" id="learningMessageText"></p>
+        </article>
+        <form class="learning-custom-form is-hidden" id="learningCustomForm">
+          <div class="learning-current-target is-hidden" id="learningCurrentTargetRow">
+            <input id="learningCurrentTarget" type="number" min="1" max="99999" inputmode="numeric" autocomplete="off" placeholder="عدد الذكر الحالي" />
+            <button id="learningSaveTargetButton" type="button">حفظ العدد</button>
+          </div>
+          <div class="learning-custom-fields is-hidden" id="learningCustomFields">
+            <input id="learningCustomText" type="text" maxlength="120" autocomplete="off" placeholder="اكتب الذكر" />
+            <input id="learningCustomBenefit" type="text" maxlength="180" autocomplete="off" placeholder="اكتب الفائدة" />
+            <input id="learningCustomTarget" type="number" min="1" max="99999" inputmode="numeric" autocomplete="off" placeholder="العدد" />
+          </div>
+          <div>
+            <button class="learning-add-button" id="learningAddButton" type="button">إضافة</button>
+            <button class="learning-delete-button" id="learningDeleteButton" type="button">حذف الحالي</button>
+          </div>
+        </form>
+        <div class="learning-actions">
+          <button class="learning-say-button" id="learningSayButton" type="button">قلت الذكر</button>
+          <div>
+            <button id="learningPrevButton" type="button">السابق</button>
+            <button id="learningResetButton" type="button">إعادة</button>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div class="app-toast is-hidden" id="appToast" role="status" aria-live="polite"></div>
 
     <script src="app.js"></script>
   </body>

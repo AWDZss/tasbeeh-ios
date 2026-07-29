@@ -1,0 +1,554 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+    <meta name="theme-color" content="#123b35" />
+    <title>تجربة تعليم الأذكار</title>
+    <style>
+      :root {
+        --ink: #123b35;
+        --muted: #6f817d;
+        --line: #d7e1dd;
+        --surface: #ffffff;
+        --soft: #eef4f1;
+        --primary: #1f6b5f;
+        --accent: #b88f45;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        min-height: 100dvh;
+        margin: 0;
+        display: grid;
+        place-items: center;
+        background:
+          radial-gradient(circle at top, rgba(184, 143, 69, 0.16), transparent 32%),
+          linear-gradient(180deg, #fbf7ee 0%, #edf4f0 100%);
+        color: var(--ink);
+        font-family: Tahoma, Arial, sans-serif;
+      }
+
+      .trainer {
+        width: min(100%, 430px);
+        min-height: 100dvh;
+        display: grid;
+        grid-template-rows: auto 1fr auto;
+        gap: 18px;
+        padding: 22px 18px;
+      }
+
+      .header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      .header h1 {
+        margin: 0;
+        font-size: 1.45rem;
+      }
+
+      .step-pill {
+        border-radius: 999px;
+        background: var(--soft);
+        color: var(--primary);
+        font-size: 0.82rem;
+        font-weight: 900;
+        padding: 8px 12px;
+      }
+
+      .card {
+        align-self: center;
+        display: grid;
+        gap: 16px;
+        border: 1px solid var(--line);
+        border-radius: 22px;
+        background: rgba(255, 255, 255, 0.9);
+        box-shadow: 0 26px 70px rgba(18, 59, 53, 0.15);
+        padding: 20px;
+      }
+
+      .label {
+        margin: 0;
+        color: var(--accent);
+        font-size: 0.82rem;
+        font-weight: 900;
+      }
+
+      .dhikr {
+        margin: 0;
+        font-size: clamp(1.6rem, 8vw, 2.4rem);
+        font-weight: 900;
+        line-height: 1.55;
+        text-align: center;
+      }
+
+      .benefit {
+        margin: 0;
+        border-radius: 16px;
+        background: var(--soft);
+        color: var(--muted);
+        font-size: 0.98rem;
+        line-height: 1.8;
+        padding: 14px;
+      }
+
+      .source {
+        margin: 0;
+        color: var(--muted);
+        font-size: 0.82rem;
+        line-height: 1.7;
+      }
+
+      .source a {
+        color: var(--primary);
+        font-weight: 900;
+      }
+
+      .counter {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+
+      .stat {
+        border-radius: 14px;
+        background: #f8fbf9;
+        padding: 12px;
+        text-align: center;
+      }
+
+      .stat span {
+        display: block;
+        color: var(--muted);
+        font-size: 0.78rem;
+        margin-bottom: 4px;
+      }
+
+      .stat strong {
+        font-size: 1.8rem;
+        font-variant-numeric: tabular-nums;
+      }
+
+      .progress {
+        height: 10px;
+        overflow: hidden;
+        border-radius: 999px;
+        background: var(--soft);
+      }
+
+      .progress span {
+        display: block;
+        width: var(--value);
+        height: 100%;
+        border-radius: inherit;
+        background: linear-gradient(90deg, var(--primary), var(--accent));
+        transition: width 240ms ease;
+      }
+
+      .actions {
+        display: grid;
+        gap: 10px;
+      }
+
+      .category-tabs {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+      }
+
+      button {
+        min-height: 56px;
+        border: 0;
+        border-radius: 16px;
+        cursor: pointer;
+        font: inherit;
+        font-weight: 900;
+      }
+
+      .category-tab {
+        min-height: 44px;
+        background: var(--soft);
+        color: var(--primary);
+        font-size: 0.8rem;
+      }
+
+      .category-tab.is-active {
+        background: var(--primary);
+        color: #fff;
+      }
+
+      .say-button {
+        background: var(--primary);
+        color: #fff;
+        font-size: 1.05rem;
+      }
+
+      .secondary-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+
+      .secondary-actions button {
+        min-height: 44px;
+        background: var(--soft);
+        color: var(--primary);
+      }
+
+      .message {
+        min-height: 28px;
+        margin: 0;
+        color: var(--primary);
+        font-size: 0.92rem;
+        font-weight: 900;
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="trainer" aria-label="تجربة تعليم الأذكار">
+      <header class="header">
+        <h1>تجربة تعليم الأذكار</h1>
+        <span class="step-pill" id="stepLabel">1 من 7</span>
+      </header>
+
+      <nav class="category-tabs" aria-label="أقسام الأذكار">
+        <button class="category-tab is-active" type="button" data-category="morningEvening">الصباح والمساء</button>
+        <button class="category-tab" type="button" data-category="once">مرة واحدة</button>
+        <button class="category-tab" type="button" data-category="protection">التحصين</button>
+      </nav>
+
+      <section class="card">
+        <p class="label">الذكر الحالي</p>
+        <h2 class="dhikr" id="dhikrText"></h2>
+        <p class="benefit" id="benefitText"></p>
+        <p class="source" id="sourceText"></p>
+
+        <div class="counter">
+          <div class="stat">
+            <span>قلت</span>
+            <strong id="countText">0</strong>
+          </div>
+          <div class="stat">
+            <span>المطلوب</span>
+            <strong id="targetText">3</strong>
+          </div>
+        </div>
+
+        <div class="progress" aria-hidden="true">
+          <span id="progressFill"></span>
+        </div>
+
+        <p class="message" id="messageText"></p>
+      </section>
+
+      <section class="actions">
+        <button class="say-button" id="sayButton" type="button">قلت الذكر</button>
+        <div class="secondary-actions">
+          <button id="prevButton" type="button">السابق</button>
+          <button id="resetButton" type="button">إعادة</button>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      const categories = {
+        morningEvening: {
+          title: "الصباح والمساء",
+          items: [
+            {
+              text: "اللهم بك أصبحنا، وبك أمسينا، وبك نحيا، وبك نموت، وإليك النشور",
+              target: 1,
+              benefit: "فيه إقرار بأن حياة العبد وموته ومصيره كله بيد الله، فيبدأ يومه متوكلًا على الله.",
+              source: "حكم الألباني: صحيح. المصدر: صحيح الأدب المفرد 911.",
+              url: "https://dorar.net/hadith/search?q=%D8%A7%D9%84%D9%84%D9%87%D9%85+%D8%A8%D9%83+%D8%A7%D8%B5%D8%A8%D8%AD%D9%86%D8%A7+%D9%88+%D8%A8%D9%83+%D8%A7%D9%85%D8%B3%D9%8A%D9%86%D8%A7",
+            },
+            {
+              text: "اللهم بك أمسينا، وبك أصبحنا، وبك نحيا، وبك نموت، وإليك المصير",
+              target: 1,
+              benefit: "فيه تسليم أمر الليل والحياة والموت والمصير إلى الله، فيدخل العبد مساءه متوكلًا عليه.",
+              source: "حكم الألباني: صحيح. المصدر: صحيح الأدب المفرد 911.",
+              url: "https://dorar.net/hadith/search?q=%D8%A7%D9%84%D9%84%D9%87%D9%85+%D8%A8%D9%83+%D8%A7%D8%B5%D8%A8%D8%AD%D9%86%D8%A7+%D9%88+%D8%A8%D9%83+%D8%A7%D9%85%D8%B3%D9%8A%D9%86%D8%A7",
+            },
+            {
+              text: "سيد الاستغفار: اللهم أنت ربي لا إله إلا أنت، خلقتني وأنا عبدك، وأنا على عهدك ووعدك ما استطعت، أعوذ بك من شر ما صنعت، أبوء لك بنعمتك، وأبوء لك بذنبي، فاغفر لي؛ فإنه لا يغفر الذنوب إلا أنت",
+              target: 1,
+              benefit: "من قاله موقنًا به في يومه أو ليلته ثم مات فهو من أهل الجنة.",
+              source: "حكم الألباني: صحيح. التخريج: أخرجه البخاري 6306.",
+              url: "https://dorar.net/hadith-category/cat/d4e27c960bd6fab75f2f855583c78384?all=&page=2",
+            },
+            {
+              text: "بسم الله الذي لا يضر مع اسمه شيء في الأرض ولا في السماء وهو السميع العليم",
+              target: 3,
+              benefit: "من قاله ثلاث مرات في الصباح أو المساء كان سببًا للسلامة من الضرر بإذن الله.",
+              source: "حكم الألباني: صحيح أو حسن صحيح. صحيح أبي داود 5088 وصحيح الترمذي 3388.",
+              url: "https://dorar.net/hadith/sharh/36007",
+            },
+            {
+              text: "أعوذ بكلمات الله التامات من شر ما خلق",
+              target: 3,
+              benefit: "من قاله ثلاث مرات في المساء لم تضره حمة تلك الليلة بإذن الله.",
+              source: "حكم أحمد شاكر: إسناده صحيح. وأصله في صحيح مسلم 2709.",
+              url: "https://dorar.net/h/45FEikQb?osoul=1",
+            },
+            {
+              text: "اللهم فاطر السماوات والأرض، عالم الغيب والشهادة، رب كل شيء ومليكه، أشهد أن لا إله إلا أنت، أعوذ بك من شر نفسي ومن شر الشيطان وشركه",
+              target: 1,
+              benefit: "فيه حماية من شر النفس ووسوسة الشيطان وشركه، ولذلك أوصى به النبي ﷺ في الصباح والمساء وعند النوم.",
+              source: "حكم الألباني: صحيح. المصدر: صحيح الأدب المفرد 913.",
+              url: "https://dorar.net/h/5ERhPgdG",
+            },
+            {
+              text: "يا حي يا قيوم برحمتك أستغيث، أصلح لي شأني كله، ولا تكلني إلى نفسي طرفة عين",
+              target: 1,
+              benefit: "فيه طلب إصلاح الشأن كله، والنجاة من ضعف النفس والاعتماد عليها ولو لحظة.",
+              source: "حكم الألباني: حسن. المصدر: صحيح الجامع 5820.",
+              url: "https://dorar.net/h/YsQbIip8",
+            },
+            {
+              text: "اللهم صل وسلم على نبينا محمد",
+              target: 10,
+              benefit: "ورد في فضل الصلاة على النبي ﷺ صباحًا ومساءً إدراك الشفاعة يوم القيامة.",
+              source: "حكم صديق خان: إسناده جيد.",
+              url: "https://dorar.net/h/Y60270ea?osoul=1",
+            },
+          ],
+        },
+        once: {
+          title: "مرة واحدة",
+          items: [
+            {
+              text: "اللهم بك أصبحنا، وبك أمسينا، وبك نحيا، وبك نموت، وإليك النشور",
+              target: 1,
+              benefit: "فيه إقرار بأن حياة العبد وموته ومصيره كله بيد الله، فيبدأ يومه بتعلق قلبه بالله وحده.",
+              source: "حكم الألباني: صحيح. المصدر: صحيح الأدب المفرد 911.",
+              url: "https://dorar.net/hadith/search?q=%D8%A7%D9%84%D9%84%D9%87%D9%85+%D8%A8%D9%83+%D8%A7%D8%B5%D8%A8%D8%AD%D9%86%D8%A7+%D9%88+%D8%A8%D9%83+%D8%A7%D9%85%D8%B3%D9%8A%D9%86%D8%A7",
+            },
+            {
+              text: "اللهم بك أمسينا، وبك أصبحنا، وبك نحيا، وبك نموت، وإليك المصير",
+              target: 1,
+              benefit: "فيه تسليم أمر الليل والحياة والموت والمصير إلى الله، فيدخل العبد مساءه متوكلًا عليه.",
+              source: "حكم الألباني: صحيح. المصدر: صحيح الأدب المفرد 911.",
+              url: "https://dorar.net/hadith/search?q=%D8%A7%D9%84%D9%84%D9%87%D9%85+%D8%A8%D9%83+%D8%A7%D8%B5%D8%A8%D8%AD%D9%86%D8%A7+%D9%88+%D8%A8%D9%83+%D8%A7%D9%85%D8%B3%D9%8A%D9%86%D8%A7",
+            },
+            {
+              text: "يا حي يا قيوم برحمتك أستغيث، أصلح لي شأني كله، ولا تكلني إلى نفسي طرفة عين",
+              target: 1,
+              benefit: "فيه طلب إصلاح الشأن كله، والنجاة من ضعف النفس والاعتماد عليها ولو لحظة.",
+              source: "حكم الألباني: حسن. المصدر: صحيح الجامع 5820.",
+              url: "https://dorar.net/h/YsQbIip8",
+            },
+            {
+              text: "اللهم فاطر السماوات والأرض، عالم الغيب والشهادة، رب كل شيء ومليكه، أشهد أن لا إله إلا أنت، أعوذ بك من شر نفسي ومن شر الشيطان وشركه",
+              target: 1,
+              benefit: "فيه حماية من شر النفس ووسوسة الشيطان وشركه، ولذلك أوصى به النبي ﷺ في الصباح والمساء وعند النوم.",
+              source: "حكم الألباني: صحيح. المصدر: صحيح الأدب المفرد 913.",
+              url: "https://dorar.net/h/5ERhPgdG",
+            },
+            {
+              text: "سبحان الله وبحمده",
+              target: 100,
+              benefit: "من قالها في يوم مئة مرة حطت خطاياه ولو كانت مثل زبد البحر.",
+              source: "حكم شعيب الأرناؤوط: إسناده صحيح. التخريج: البخاري 6405.",
+              url: "https://dorar.net/h/QaSuVdPY?osoul=1",
+            },
+          ],
+        },
+        protection: {
+          title: "التحصين",
+          items: [
+            {
+              text: "لا إله إلا الله وحده لا شريك له، له الملك وله الحمد، وهو على كل شيء قدير",
+              target: 100,
+              benefit: "من قالها مئة مرة كانت له حرزًا من الشيطان يومه ذلك حتى يمسي.",
+              source: "حكم مسلم: صحيح. التخريج: أخرجه البخاري 3293 ومسلم 2691.",
+              url: "https://dorar.net/hadith-category/cat/d3918cf40b073d49fac95bda7febf8e8",
+            },
+            {
+              text: "بسم الله",
+              target: 1,
+              benefit: "ذكر الله عند دخول البيت وعند الطعام يمنع الشيطان من المبيت والعشاء مع أهل البيت.",
+              source: "حكم الألباني: صحيح. التخريج: أخرجه مسلم 2018.",
+              url: "https://dorar.net/hadith-category/cat/1eebb5f4fb",
+            },
+            {
+              text: "أعوذ بالله من الشيطان الرجيم",
+              target: 1,
+              benefit: "عند سماع نهيق الحمير يشرع التعوذ بالله من الشيطان؛ لأنها رأت شيطانًا.",
+              source: "حكم الألباني: صحيح. المصدر: صحيح الجامع 611.",
+              url: "https://dorar.net/hadith-category/cat/b4d834ade002177de1ff092f753606d0",
+            },
+            {
+              text: "أعوذ بكلمات الله التامات من شر ما خلق",
+              target: 1,
+              benefit: "من قالها عند نزول منزل لم يضره شيء حتى يرتحل من منزله ذلك.",
+              source: "حكم مسلم: صحيح. التخريج: صحيح مسلم 2708.",
+              url: "https://dorar.net/hadith/sharh/20531",
+            },
+            {
+              text: "اللهم فاطر السماوات والأرض، عالم الغيب والشهادة، رب كل شيء ومليكه، أشهد أن لا إله إلا أنت، أعوذ بك من شر نفسي ومن شر الشيطان وشركه",
+              target: 1,
+              benefit: "فيه استعاذة من شر النفس ووسوسة الشيطان وشركه.",
+              source: "حكم الألباني: صحيح. المصدر: صحيح الأدب المفرد 913.",
+              url: "https://dorar.net/h/5ERhPgdG",
+            },
+          ],
+        },
+      };
+
+      const categoryKeys = Object.keys(categories);
+      const storageKey = "tasbeeh-learning-test-v3";
+      const elements = {
+        categoryTabs: document.querySelectorAll(".category-tab"),
+        stepLabel: document.querySelector("#stepLabel"),
+        dhikrText: document.querySelector("#dhikrText"),
+        benefitText: document.querySelector("#benefitText"),
+        sourceText: document.querySelector("#sourceText"),
+        countText: document.querySelector("#countText"),
+        targetText: document.querySelector("#targetText"),
+        progressFill: document.querySelector("#progressFill"),
+        messageText: document.querySelector("#messageText"),
+        sayButton: document.querySelector("#sayButton"),
+        prevButton: document.querySelector("#prevButton"),
+        resetButton: document.querySelector("#resetButton"),
+      };
+
+      let state = loadState();
+      let moveTimer = null;
+
+      function createEmptyCounts() {
+        return Object.fromEntries(categoryKeys.map((key) => [key, categories[key].items.map(() => 0)]));
+      }
+
+      function loadState() {
+        const fallback = {
+          category: "morningEvening",
+          indexes: { morningEvening: 0, once: 0, protection: 0 },
+          counts: createEmptyCounts(),
+        };
+        try {
+          const saved = JSON.parse(localStorage.getItem(storageKey));
+          const category = categoryKeys.includes(saved?.category) ? saved.category : fallback.category;
+          return {
+            category,
+            indexes: { ...fallback.indexes, ...(saved?.indexes || {}) },
+            counts: { ...fallback.counts, ...(saved?.counts || {}) },
+          };
+        } catch {
+          return fallback;
+        }
+      }
+
+      function saveState() {
+        localStorage.setItem(storageKey, JSON.stringify(state));
+      }
+
+      function getCurrentList() {
+        return categories[state.category].items;
+      }
+
+      function getCurrentIndex() {
+        const list = getCurrentList();
+        const index = Math.min(Math.max(Number(state.indexes[state.category]) || 0, 0), list.length - 1);
+        state.indexes[state.category] = index;
+        return index;
+      }
+
+      function getCurrentCount(index = getCurrentIndex()) {
+        const list = getCurrentList();
+        state.counts[state.category] = Array.isArray(state.counts[state.category])
+          ? state.counts[state.category]
+          : list.map(() => 0);
+        return Math.min(Number(state.counts[state.category][index]) || 0, list[index].target);
+      }
+
+      function formatNumber(number) {
+        return Number(number || 0).toLocaleString("ar-SA");
+      }
+
+      function render() {
+        const list = getCurrentList();
+        const index = getCurrentIndex();
+        const current = list[index];
+        const count = getCurrentCount(index);
+        const progress = Math.round((count / current.target) * 100);
+
+        elements.categoryTabs.forEach((tab) => {
+          tab.classList.toggle("is-active", tab.dataset.category === state.category);
+        });
+        elements.stepLabel.textContent = `${categories[state.category].title}: ${formatNumber(index + 1)} من ${formatNumber(list.length)}`;
+        elements.dhikrText.textContent = current.text;
+        elements.benefitText.textContent = current.benefit;
+        elements.sourceText.innerHTML = `${current.source} <a href="${current.url}" target="_blank" rel="noopener">الموسوعة الحديثية — الدرر السنية</a>`;
+        elements.countText.textContent = formatNumber(count);
+        elements.targetText.textContent = formatNumber(current.target);
+        elements.progressFill.style.setProperty("--value", `${progress}%`);
+        elements.sayButton.textContent = count >= current.target ? "انتظر الذكر التالي" : "قلت الذكر";
+        elements.sayButton.disabled = count >= current.target;
+      }
+
+      function goToNext() {
+        window.clearTimeout(moveTimer);
+        const list = getCurrentList();
+        state.indexes[state.category] = (getCurrentIndex() + 1) % list.length;
+        elements.messageText.textContent = "";
+        saveState();
+        render();
+      }
+
+      function completeCurrentDhikr() {
+        elements.messageText.textContent = "أحسنت، ننتقل للذكر التالي...";
+        saveState();
+        moveTimer = window.setTimeout(goToNext, 1100);
+      }
+
+      elements.categoryTabs.forEach((tab) => {
+        tab.addEventListener("click", () => {
+          window.clearTimeout(moveTimer);
+          state.category = tab.dataset.category;
+          elements.messageText.textContent = "";
+          saveState();
+          render();
+        });
+      });
+
+      elements.sayButton.addEventListener("click", () => {
+        const index = getCurrentIndex();
+        const current = getCurrentList()[index];
+        const nextCount = Math.min(getCurrentCount(index) + 1, current.target);
+        state.counts[state.category][index] = nextCount;
+        saveState();
+        render();
+
+        if (nextCount >= current.target) {
+          completeCurrentDhikr();
+        }
+      });
+
+      elements.prevButton.addEventListener("click", () => {
+        window.clearTimeout(moveTimer);
+        const list = getCurrentList();
+        state.indexes[state.category] = (getCurrentIndex() - 1 + list.length) % list.length;
+        elements.messageText.textContent = "";
+        saveState();
+        render();
+      });
+
+      elements.resetButton.addEventListener("click", () => {
+        window.clearTimeout(moveTimer);
+        state.counts[state.category][getCurrentIndex()] = 0;
+        elements.messageText.textContent = "";
+        saveState();
+        render();
+      });
+
+      render();
+    </script>
+  </body>
+</html>

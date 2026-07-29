@@ -1,4 +1,4 @@
-const cacheName = "tasbeeh-v11";
+const cacheName = "tasbeeh-v29";
 const appShell = ["./", "./index.html", "./styles.css", "./app.js", "./manifest.webmanifest", "./icon.svg"];
 
 self.addEventListener("install", (event) => {

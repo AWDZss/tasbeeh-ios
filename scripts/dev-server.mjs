@@ -8,7 +8,7 @@ import "./sync-web.mjs";
 const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const webDir = path.join(projectRoot, "www");
 const host = "127.0.0.1";
-const preferredPort = Number(process.env.PORT || 3000);
+const preferredPort = Number(process.env.PORT || 3030);
 
 const mimeTypes = new Map([
   [".html", "text/html; charset=utf-8"],
