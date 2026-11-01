@@ -83,6 +83,85 @@ button {
   gap: 8px;
 }
 
+.voice-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px 12px;
+  min-height: 38px;
+}
+
+.voice-switch {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 36px;
+  color: var(--primary);
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.voice-switch input {
+  position: absolute;
+  inset-inline-start: 0;
+  top: 3px;
+  z-index: 1;
+  opacity: 0;
+  width: 40px;
+  height: 30px;
+  margin: 0;
+  cursor: pointer;
+}
+
+.voice-switch-track {
+  pointer-events: none;
+  width: 40px;
+  height: 24px;
+  flex-shrink: 0;
+  border-radius: 20px;
+  background: #c6d3cd;
+  transition: background 160ms ease;
+}
+
+.voice-switch-track::after {
+  content: "";
+  display: block;
+  width: 18px;
+  height: 18px;
+  margin: 3px;
+  border-radius: 50%;
+  background: white;
+  transition: transform 160ms ease;
+}
+
+.voice-switch input:checked + .voice-switch-track { background: var(--primary-2); }
+.voice-switch input:checked + .voice-switch-track::after { transform: translateX(-16px); }
+.voice-switch input:focus-visible + .voice-switch-track { outline: 3px solid var(--gold); outline-offset: 3px; }
+.voice-switch input:disabled + .voice-switch-track { opacity: 0.5; }
+.voice-status { color: var(--muted); font-size: 0.73rem; line-height: 1.6; overflow-wrap: anywhere; }
+.voice-controls.is-listening .voice-status { color: var(--primary-2); }
+
+@media (max-height: 700px) {
+  .learning-card { padding: 12px; gap: 7px; }
+  .learning-card .modal-header h2 { font-size: 1.05rem; }
+  .learning-card .voice-controls { min-height: 30px; }
+  .learning-card .voice-switch { min-height: 30px; font-size: 0.75rem; }
+  .learning-card .learning-dhikr-card { display: flex; flex-direction: column; gap: 5px; padding: 8px; }
+  .learning-card .learning-dhikr-card > * { flex-shrink: 0; }
+  .learning-card .learning-dhikr-card .label { display: none; }
+  .learning-card .learning-dhikr-card h3 { font-size: 0.95rem; line-height: 1.3; min-height: 3.9em; max-height: 3.9em; }
+  .learning-card .learning-benefit { padding: 5px; font-size: 0.72rem; max-height: 3.8em; }
+  .learning-card .learning-source { font-size: 0.62rem; max-height: 1.45em; }
+  .learning-card .learning-stats div { padding: 4px; }
+  .learning-card .learning-stats span { font-size: 0.65rem; margin-bottom: 2px; }
+  .learning-card .learning-stats strong { font-size: 1rem; }
+  .learning-card .learning-progress { height: 6px; }
+  .learning-card .learning-message:empty { display: none; }
+}
+
 h1 {
   margin: 0;
   font-size: 2rem;
@@ -250,7 +329,7 @@ h1 {
 }
 
 .learning-card {
-  grid-template-rows: auto auto minmax(0, 1fr) auto auto;
+  grid-template-rows: auto auto auto minmax(0, 1fr) auto auto;
   align-content: start;
   gap: 9px;
   overflow: hidden;

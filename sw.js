@@ -1,5 +1,5 @@
-const cacheName = "tasbeeh-v29";
-const appShell = ["./", "./index.html", "./styles.css", "./app.js", "./manifest.webmanifest", "./icon.svg"];
+const cacheName = "tasbeeh-v31-voice";
+const appShell = ["./", "./index.html", "./styles.css", "./app.js", "./speech-counter.js", "./manifest.webmanifest", "./icon.svg"];
 
 self.addEventListener("install", (event) => {
   self.skipWaiting();

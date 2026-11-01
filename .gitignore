@@ -1,5 +1,7 @@
 # Dependencies
 node_modules/
+media-tools/
+media/promo/work/
 
 # Capacitor and native build output
 ios/App/App/public/

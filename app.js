@@ -287,6 +287,7 @@ let isLapTargetVisible = false;
 let isLearningCustomFieldsOpen = false;
 let isLearningTargetEditorOpen = false;
 let learningMoveTimer = null;
+let voiceController = null;
 
 function getNativePreferences() {
   return window.Capacitor?.Plugins?.Preferences;
@@ -537,6 +538,7 @@ function render() {
   if (isLearningOpen) {
     renderLearningPage();
   }
+  voiceController?.syncContext();
 }
 
 function getLearningList() {
@@ -801,17 +803,21 @@ function giveFeedback() {
   }
 }
 
-function addCount() {
+function addCount(amount = 1) {
+  if (!getCurrentDhikr()) return;
+  const increment = typeof amount === "number" ? Math.max(1, Math.floor(amount)) : 1;
   const currentProgress = getCurrentProgress();
-  currentProgress.count += 1;
-  currentProgress.total += 1;
+  const next = currentProgress.count + increment;
+  const completedLaps = Math.floor(next / currentProgress.target);
+  currentProgress.count = next % currentProgress.target;
+  currentProgress.total += increment;
   if (!state.dailyStats[todayKey]) {
     state.dailyStats[todayKey] = { total: 0 };
   }
-  state.dailyStats[todayKey].total += 1;
+  state.dailyStats[todayKey].total += increment;
 
-  if (currentProgress.count === currentProgress.target) {
-    currentProgress.laps += 1;
+  if (completedLaps > 0) {
+    currentProgress.laps += completedLaps;
     const currentDhikr = getCurrentDhikr();
     notifyOnce(
       `lap-completed:${currentDhikr?.id || "dhikr"}:${currentProgress.laps}`,
@@ -819,11 +825,6 @@ function addCount() {
       `أكملت ${currentProgress.laps.toLocaleString("ar-SA")} لفة في ${currentDhikr?.title || "الذكر الحالي"}.`
     );
     maybeNotifyAllDhikrCompleted();
-    setTimeout(() => {
-      currentProgress.count = 0;
-      saveState();
-      render();
-    }, 450);
   }
 
   giveFeedback();
@@ -915,11 +916,12 @@ function completeLearningDhikr() {
   learningMoveTimer = window.setTimeout(goToNextLearningDhikr, 1100);
 }
 
-function addLearningCount() {
+function addLearningCount(amount = 1) {
+  const increment = typeof amount === "number" ? Math.max(1, Math.floor(amount)) : 1;
   const index = getLearningIndex();
   const current = getLearningList()[index];
   if (getLearningCount(index) >= current.target) return;
-  const nextCount = Math.min(getLearningCount(index) + 1, current.target);
+  const nextCount = Math.min(getLearningCount(index) + increment, current.target);
   state.learning.counts[state.learning.category][index] = nextCount;
   saveState();
   render();
@@ -957,7 +959,7 @@ function resetLearningDhikr() {
 
 function shouldCountLearningTap(event) {
   return !event.target.closest(
-    "#closeLearningPage, #learningTargetStat, .learning-tab, .learning-actions, .learning-custom-form, a, input, button"
+    "#closeLearningPage, #learningTargetStat, .learning-tab, .learning-actions, .learning-custom-form, [data-voice-controls], a, input, button"
   );
 }
 
@@ -1042,7 +1044,7 @@ function shouldOpenDhikrListFromPanel(event) {
 
 function shouldCountGlobalTap(event) {
   if (isAddingDhikr || isDhikrListOpen || isProgressOpen || isLearningOpen) return false;
-  return !event.target.closest("#dhikrPanel, button, input, label, .modal-overlay, .dhikr-list-page, .progress-page, .learning-page");
+  return !event.target.closest("#dhikrPanel, button, input, label, [data-voice-controls], .modal-overlay, .dhikr-list-page, .progress-page, .learning-page");
 }
 
 function closeAddDhikrForm() {
@@ -1201,6 +1203,7 @@ elements.customDhikrForm.addEventListener("submit", (event) => {
 });
 
 document.addEventListener("keydown", (event) => {
+  if (event.target.closest("[data-voice-controls]")) return;
   if ((event.code === "Space" || event.code === "Enter") && event.target === elements.dhikrPanel) {
     event.preventDefault();
     openDhikrList();
@@ -1274,6 +1277,41 @@ if (isLocalPreview()) {
 } else if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("./sw.js").catch(() => {});
 }
+
+function voiceContext() {
+  if (isAddingDhikr || isDhikrListOpen || isProgressOpen || document.hidden) return null;
+  if (isLearningOpen) {
+    if (isLearningCustomFieldsOpen || isLearningTargetEditorOpen) return null;
+    const index = getLearningIndex();
+    const item = getLearningList()[index];
+    if (!item) return null;
+    return { key: `learning:${state.learning.category}:${index}`, phrase: item.text.replace(/^سيد الاستغفار:\s*/, "") };
+  }
+  const item = getCurrentDhikr();
+  return item ? { key: `main:${item.id}`, phrase: item.title } : null;
+}
+
+voiceController = DhikrVoice.createController({
+  context: voiceContext,
+  onCount(amount, key) {
+    if (voiceContext()?.key !== key) return;
+    if (isLearningOpen) addLearningCount(amount);
+    else addCount(amount);
+  },
+  onState({ active, pending, message }) {
+    document.querySelectorAll("[data-voice-toggle]").forEach((input) => {
+      input.checked = active || pending;
+      input.setAttribute("aria-checked", String(active || pending));
+    });
+    document.querySelectorAll("[data-voice-status]").forEach((status) => { status.textContent = message; });
+    document.querySelectorAll("[data-voice-controls]").forEach((row) => row.classList.toggle("is-listening", active));
+  },
+});
+document.querySelectorAll("[data-voice-toggle]").forEach((input) => {
+  input.addEventListener("change", () => input.checked ? voiceController.start() : voiceController.stop());
+});
+document.addEventListener("visibilitychange", () => { if (document.hidden) voiceController.stop(); });
+window.addEventListener("pagehide", () => voiceController.stop());
 
 render();
 hydrateNativeState();

@@ -26,6 +26,15 @@
         </div>
       </section>
 
+      <div class="voice-controls" data-voice-controls>
+        <label class="voice-switch">
+          <input type="checkbox" role="switch" data-voice-toggle aria-label="العد بالصوت" />
+          <span class="voice-switch-track" aria-hidden="true"></span>
+          <span>العد بالصوت</span>
+        </label>
+        <span class="voice-status" data-voice-status role="status">الاستماع متوقف</span>
+      </div>
+
       <section class="dhikr-panel" id="dhikrPanel" aria-live="polite" role="button" tabindex="0" aria-label="فتح قائمة الأذكار">
         <button class="chip-nav" id="prevDhikr" type="button" aria-label="الذكر السابق">‹</button>
         <div class="dhikr-copy">
@@ -133,6 +142,14 @@
           </div>
           <button class="modal-close" id="closeLearningPage" type="button" aria-label="إغلاق">×</button>
         </div>
+        <div class="voice-controls" data-voice-controls>
+          <label class="voice-switch">
+            <input type="checkbox" role="switch" data-voice-toggle aria-label="العد بالصوت" />
+            <span class="voice-switch-track" aria-hidden="true"></span>
+            <span>العد بالصوت</span>
+          </label>
+          <span class="voice-status" data-voice-status role="status">الاستماع متوقف</span>
+        </div>
         <div class="learning-tabs" id="learningTabs">
           <button class="learning-tab is-active" type="button" data-category="morningEvening">الصباح والمساء</button>
           <button class="learning-tab" type="button" data-category="once">مرة واحدة</button>
@@ -186,6 +203,7 @@
 
     <div class="app-toast is-hidden" id="appToast" role="status" aria-live="polite"></div>
 
+    <script src="speech-counter.js"></script>
     <script src="app.js"></script>
   </body>
 </html>
