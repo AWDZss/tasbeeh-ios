@@ -46,6 +46,27 @@ function mockNative() {
 }
 const turn = () => new Promise(resolve => setImmediate(resolve));
 
+test('Continuous partial speech counts without waiting for a pause', async () => {
+  const native = mockNative();
+  const counts = [];
+  const controller = createController({ environment: native.environment,
+    context: () => ({ key: 'a', phrase: 'استغفر الله' }),
+    onCount: amount => counts.push(amount), onState() {} });
+  await controller.start();
+  const interval = setInterval(() => native.emit('transcript', {
+    session: 's1', text: 'استغفر الله', final: false
+  }), 30);
+  try {
+    await new Promise(resolve => setTimeout(resolve, 350));
+    assert.deepEqual(counts, [1]);
+    native.emit('transcript', { session: 's1', text: 'استغفر الله', final: true });
+    assert.deepEqual(counts, [1]);
+  } finally {
+    clearInterval(interval);
+    await controller.stop();
+  }
+});
+
 test('Opt in, switch dhikr, ignore previous sessions and stop immediately', async () => {
   const native = mockNative();
   let context = { key: 'a', phrase: 'استغفر الله' };

@@ -52,6 +52,7 @@
       active = false;
       pending = false;
       clearTimeout(settleTimer);
+      settleTimer = null;
       pendingDelivery = null;
       clearTimeout(restartTimer);
       if (recognizer) {
@@ -70,22 +71,33 @@
 
     function receive(text, segment, final, ticket) {
       if (!active || ticket !== generation) return;
-      clearTimeout(settleTimer);
-      pendingDelivery = null;
       const deliver = () => {
         if (!active || ticket !== generation || context()?.key !== current.key) return;
         const amount = matcher.accept(text, segment);
         if (amount) onCount(amount, current.key);
+        report(amount ? "تم احتساب الذكر" : "أسمع كلامك؛ قل الذكر المعروض كاملًا");
       };
-      if (final) deliver();
+      if (final) {
+        clearTimeout(settleTimer);
+        settleTimer = null;
+        pendingDelivery = null;
+        deliver();
+      }
       else {
         pendingDelivery = deliver;
-        settleTimer = setTimeout(() => { pendingDelivery = null; deliver(); }, 450);
+        // Throttle the latest partial instead of waiting for silence indefinitely.
+        if (!settleTimer) settleTimer = setTimeout(() => {
+          settleTimer = null;
+          const latest = pendingDelivery;
+          pendingDelivery = null;
+          latest?.();
+        }, 200);
       }
     }
 
     function flushPending() {
       clearTimeout(settleTimer);
+      settleTimer = null;
       const deliver = pendingDelivery;
       pendingDelivery = null;
       deliver?.();

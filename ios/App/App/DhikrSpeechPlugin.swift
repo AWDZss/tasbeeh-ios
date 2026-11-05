@@ -111,14 +111,17 @@ public class DhikrSpeechPlugin: CAPPlugin, CAPBridgedPlugin {
         }
         endSession()
         let audioSession = AVAudioSession.sharedInstance()
-        try audioSession.setCategory(.record, mode: .measurement)
+        try audioSession.setCategory(.playAndRecord, mode: .voiceChat, options: [.defaultToSpeaker])
         try audioSession.setActive(true)
+        let input = engine.inputNode
+        // Speech processing includes automatic gain control for quieter voices.
+        try input.setVoiceProcessingEnabled(true)
+        input.isVoiceProcessingAGCEnabled = true
         let nextRequest = SFSpeechAudioBufferRecognitionRequest()
         nextRequest.shouldReportPartialResults = true
         nextRequest.requiresOnDeviceRecognition = true
         nextRequest.contextualStrings = phrases
         nextRequest.taskHint = .dictation
-        let input = engine.inputNode
         let format = input.outputFormat(forBus: 0)
         guard format.sampleRate > 0, format.channelCount > 0 else {
             throw NSError(domain: "DhikrSpeech", code: 2)
