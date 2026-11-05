@@ -75,7 +75,10 @@
         if (!active || ticket !== generation || context()?.key !== current.key) return;
         const amount = matcher.accept(text, segment);
         if (amount) onCount(amount, current.key);
-        report(amount ? "تم احتساب الذكر" : "أسمع كلامك؛ قل الذكر المعروض كاملًا");
+        if (active && ticket === generation) {
+          report(amount ? "تم احتساب الذكر" : normalize(text).includes(matcher.phrase)
+            ? "أستمع للذكر الحالي" : "أسمع كلامك؛ قل الذكر المعروض كاملًا");
+        }
       };
       if (final) {
         clearTimeout(settleTimer);
@@ -112,8 +115,11 @@
         LOCAL_UNAVAILABLE: "التعرف العربي على الجهاز غير متاح؛ يمكنك الاستمرار بالضغط",
         "language-not-supported": "التعرف العربي على الجهاز غير متاح؛ يمكنك الاستمرار بالضغط",
         UNAVAILABLE: "التعرف على الصوت غير متاح الآن",
+        AUDIO_START_FAILED: "تعذر تشغيل الميكروفون؛ أغلق أي مكالمة أو تطبيق يستخدمه ثم أعد المحاولة",
+        RECOGNITION_FAILED: "تعذر تشغيل التعرف على الكلام على الجهاز",
       };
-      return stop(messages[code] || "توقف الاستماع؛ حاول تشغيله مرة أخرى");
+      const diagnostic = Number.isInteger(error?.nativeCode) ? ` (${error.nativeCode})` : "";
+      return stop((messages[code] || "تعذر بدء الاستماع؛ أعد تشغيل التطبيق وحاول مرة أخرى") + diagnostic);
     }
 
     async function start() {

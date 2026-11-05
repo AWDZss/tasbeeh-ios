@@ -129,3 +129,17 @@ test('Permission denial leaves the feature off with no leaked native listeners',
   assert.match(last.message, /الميكروفون/);
   native.emit('transcript', { session: 's1', text: 'الله أكبر', final: true });
 });
+
+test('Native recognition errors show a diagnostic and turn listening off', async () => {
+  const native = mockNative();
+  let last;
+  const controller = createController({ environment: native.environment,
+    context: () => ({ key: 'a', phrase: 'الله أكبر' }), onCount() {},
+    onState: state => { last = state; } });
+  await controller.start();
+  native.emit('speechState', { state: 'error', code: 'RECOGNITION_FAILED', nativeCode: 1101 });
+  await turn();
+  assert.equal(last.active, false);
+  assert.match(last.message, /1101/);
+  assert.match(last.message, /التعرف على الكلام/);
+});

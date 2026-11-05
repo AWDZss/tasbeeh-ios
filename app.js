@@ -1300,8 +1300,10 @@ voiceController = DhikrVoice.createController({
   },
   onState({ active, pending, message }) {
     document.querySelectorAll("[data-voice-toggle]").forEach((input) => {
-      input.checked = active || pending;
-      input.setAttribute("aria-checked", String(active || pending));
+      input.checked = active;
+      input.disabled = pending;
+      input.setAttribute("aria-checked", String(active));
+      input.setAttribute("aria-busy", String(pending));
     });
     document.querySelectorAll("[data-voice-status]").forEach((status) => { status.textContent = message; });
     document.querySelectorAll("[data-voice-controls]").forEach((row) => row.classList.toggle("is-listening", active));

@@ -22,6 +22,9 @@ html {
 }
 
 body {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
   margin: 0;
   min-height: 100vh;
   background:
@@ -31,6 +34,12 @@ body {
   display: grid;
   place-items: center;
   touch-action: manipulation;
+}
+
+input, textarea, [contenteditable="true"] {
+  -webkit-user-select: text;
+  user-select: text;
+  -webkit-touch-callout: default;
 }
 
 body.has-fixed-page {
@@ -122,7 +131,7 @@ button {
   height: 24px;
   flex-shrink: 0;
   border-radius: 20px;
-  background: #c6d3cd;
+  background: #9ca3af;
   transition: background 160ms ease;
 }
 
@@ -137,7 +146,7 @@ button {
   transition: transform 160ms ease;
 }
 
-.voice-switch input:checked + .voice-switch-track { background: var(--primary-2); }
+.voice-switch input:checked + .voice-switch-track { background: #16854a; }
 .voice-switch input:checked + .voice-switch-track::after { transform: translateX(-16px); }
 .voice-switch input:focus-visible + .voice-switch-track { outline: 3px solid var(--gold); outline-offset: 3px; }
 .voice-switch input:disabled + .voice-switch-track { opacity: 0.5; }

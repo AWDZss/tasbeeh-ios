@@ -32,6 +32,7 @@ public class DhikrSpeechPlugin: CAPPlugin, CAPBridgedPlugin {
     private var session = ""
     private var phrases: [String] = []
     private var failures = 0
+    private var useVoiceProcessing = true
 
     public override func load() {
         backgroundObserver = NotificationCenter.default.addObserver(
@@ -85,11 +86,12 @@ public class DhikrSpeechPlugin: CAPPlugin, CAPBridgedPlugin {
                         do {
                             self.active = true
                             self.failures = 0
-                            try self.beginSession()
+                            self.useVoiceProcessing = true
+                            try self.beginSessionWithFallback()
                             call.resolve(["session": self.session, "local": true])
                         } catch {
                             self.stopRecording()
-                            call.reject("Cannot start microphone", "UNAVAILABLE")
+                            call.reject("Cannot start microphone", "AUDIO_START_FAILED")
                         }
                     }
                 }
@@ -104,6 +106,17 @@ public class DhikrSpeechPlugin: CAPPlugin, CAPBridgedPlugin {
         }
     }
 
+    private func beginSessionWithFallback() throws {
+        do {
+            try beginSession()
+        } catch {
+            guard useVoiceProcessing else { throw error }
+            endSession()
+            useVoiceProcessing = false
+            try beginSession()
+        }
+    }
+
     private func beginSession() throws {
         guard active, let recognizer = recognizer,
               recognizer.supportsOnDeviceRecognition, recognizer.isAvailable else {
@@ -111,12 +124,18 @@ public class DhikrSpeechPlugin: CAPPlugin, CAPBridgedPlugin {
         }
         endSession()
         let audioSession = AVAudioSession.sharedInstance()
-        try audioSession.setCategory(.playAndRecord, mode: .voiceChat, options: [.defaultToSpeaker])
+        if useVoiceProcessing {
+            try audioSession.setCategory(.playAndRecord, mode: .voiceChat, options: [.defaultToSpeaker])
+        } else {
+            try audioSession.setCategory(.record, mode: .default)
+        }
         try audioSession.setActive(true)
         let input = engine.inputNode
         // Speech processing includes automatic gain control for quieter voices.
-        try input.setVoiceProcessingEnabled(true)
-        input.isVoiceProcessingAGCEnabled = true
+        if input.isVoiceProcessingEnabled != useVoiceProcessing {
+            try input.setVoiceProcessingEnabled(useVoiceProcessing)
+        }
+        if useVoiceProcessing { input.isVoiceProcessingAGCEnabled = true }
         let nextRequest = SFSpeechAudioBufferRecognitionRequest()
         nextRequest.shouldReportPartialResults = true
         nextRequest.requiresOnDeviceRecognition = true
@@ -145,9 +164,18 @@ public class DhikrSpeechPlugin: CAPPlugin, CAPBridgedPlugin {
                     ])
                 }
                 if error != nil || result?.isFinal == true {
-                    if error != nil { self.failures += 1 }
-                    if self.failures > 3 { self.failAndStop(); return }
-                    self.restartSession(after: 0.3)
+                    let nativeError = error as NSError?
+                    // Silence is expected between repetitions, not a failed microphone.
+                    let noSpeech = nativeError?.domain == "kAFAssistantErrorDomain" && nativeError?.code == 1110
+                    if error != nil && !noSpeech {
+                        self.failures += 1
+                        self.useVoiceProcessing = false
+                    }
+                    if self.failures > 3 {
+                        self.failAndStop(code: "RECOGNITION_FAILED", nativeCode: nativeError?.code)
+                        return
+                    }
+                    self.restartSession(after: noSpeech ? 0.6 : 0.3)
                 }
             }
         }
@@ -164,7 +192,8 @@ public class DhikrSpeechPlugin: CAPPlugin, CAPBridgedPlugin {
         endSession()
         DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self] in
             guard let self = self, self.active, self.generation == ticket else { return }
-            do { try self.beginSession() } catch { self.failAndStop() }
+            do { try self.beginSessionWithFallback() }
+            catch { self.failAndStop(code: "AUDIO_START_FAILED", nativeCode: (error as NSError).code) }
         }
     }
 
@@ -193,8 +222,10 @@ public class DhikrSpeechPlugin: CAPPlugin, CAPBridgedPlugin {
         notifyListeners("speechState", data: ["state": "stopped"])
     }
 
-    private func failAndStop() {
+    private func failAndStop(code: String, nativeCode: Int? = nil) {
         stopRecording()
-        notifyListeners("speechState", data: ["state": "error", "code": "UNAVAILABLE"])
+        var data: [String: Any] = ["state": "error", "code": code]
+        if let nativeCode = nativeCode { data["nativeCode"] = nativeCode }
+        notifyListeners("speechState", data: data)
     }
 }
