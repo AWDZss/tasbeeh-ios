@@ -136,7 +136,12 @@
         const capacitor = environment.Capacitor;
         if (capacitor?.isNativePlatform?.()) {
           if (!capacitor.isPluginAvailable("DhikrSpeech")) throw { code: "UNAVAILABLE" };
-          native = native || capacitor.registerPlugin("DhikrSpeech");
+          // The injected iOS bridge exposes Plugins, not the npm registerPlugin helper.
+          native = native || capacitor.Plugins?.DhikrSpeech;
+          if (!native && typeof capacitor.registerPlugin === "function") {
+            native = capacitor.registerPlugin("DhikrSpeech");
+          }
+          if (!native) throw { code: "UNAVAILABLE" };
           const nextHandles = [];
           try {
             nextHandles.push(await native.addListener("transcript", (event) => {

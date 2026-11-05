@@ -143,3 +143,21 @@ test('Native recognition errors show a diagnostic and turn listening off', async
   assert.match(last.message, /1101/);
   assert.match(last.message, /التعرف على الكلام/);
 });
+
+test('Injected Capacitor iOS bridge works without the npm registerPlugin helper', async () => {
+  const native = mockNative();
+  const capacitor = native.environment.Capacitor;
+  capacitor.Plugins = { DhikrSpeech: capacitor.registerPlugin() };
+  delete capacitor.registerPlugin;
+  let last;
+  const counts = [];
+  const controller = createController({ environment: native.environment,
+    context: () => ({ key: 'a', phrase: 'الحمد لله' }),
+    onCount: amount => counts.push(amount), onState: state => { last = state; } });
+  await controller.start();
+  assert.equal(last.active, true);
+  native.emit('transcript', { session: 's1', text: 'الحمد لله الحمد لله', final: true });
+  assert.deepEqual(counts, [2]);
+  await controller.stop();
+  assert.equal(last.active, false);
+});
