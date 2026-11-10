@@ -292,6 +292,10 @@ h1 {
   display: none;
 }
 
+#customDhikrModal {
+  z-index: 13;
+}
+
 .dhikr-list-page {
   position: fixed;
   inset: 0;
@@ -701,6 +705,28 @@ h1 {
   padding-left: 2px;
 }
 
+.dhikr-list-actions,
+.dhikr-list-item-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.dhikr-list-actions { align-items: center; }
+.dhikr-list-actions .add-tool-button,
+.dhikr-list-item-header .delete-tool-button {
+  flex-shrink: 0;
+  padding-inline: 10px;
+  border-radius: 8px;
+  font-size: 0.78rem;
+}
+
+.dhikr-list-empty {
+  margin: 12px 0;
+  text-align: center;
+  color: var(--muted);
+}
+
 .dhikr-list-item {
   display: grid;
   gap: 8px;
@@ -719,6 +745,14 @@ h1 {
 }
 
 .dhikr-list-title {
+  flex: 1;
+  min-width: 0;
+  min-height: 38px;
+  padding: 0;
+  text-align: start;
+  background: transparent;
+  color: inherit;
+  overflow-wrap: anywhere;
   font-size: 1rem;
   font-weight: 900;
   line-height: 1.5;

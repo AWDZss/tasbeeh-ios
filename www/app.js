@@ -220,6 +220,7 @@ const elements = {
   closeDhikrModal: document.querySelector("#closeDhikrModal"),
   dhikrListPage: document.querySelector("#dhikrListPage"),
   dhikrListBody: document.querySelector("#dhikrListBody"),
+  addDhikrFromList: document.querySelector("#addDhikrFromList"),
   closeDhikrList: document.querySelector("#closeDhikrList"),
   progressPage: document.querySelector("#progressPage"),
   closeProgressPage: document.querySelector("#closeProgressPage"),
@@ -343,7 +344,7 @@ function normalizeState(saved) {
   merged.customDhikr = merged.customDhikr.map((dhikr, index) => ({
     id: dhikr.id || `saved-custom-${index}-${dhikr.title || "dhikr"}`,
     title: dhikr.title || "ذكر مخصص",
-    subtitle: dhikr.subtitle || "فائدة الذكر",
+    subtitle: dhikr.subtitle || "",
   }));
 
   merged.target = Math.max(1, Number(merged.target) || defaultState.target);
@@ -515,11 +516,12 @@ function render() {
   const currentDhikrList = getDhikrList();
   const dhikr = getCurrentDhikr();
   elements.dhikrTitle.textContent = dhikr?.title || "لا توجد أذكار";
-  elements.dhikrSubtitle.textContent = dhikr?.subtitle || "اضغط إضافة لإضافة ذكر جديد.";
+  elements.dhikrSubtitle.textContent = dhikr ? dhikr.subtitle : "";
   elements.customDhikrModal.classList.toggle("is-hidden", !isAddingDhikr);
   elements.customDhikrModal.setAttribute("aria-hidden", String(!isAddingDhikr));
   elements.dhikrListPage.classList.toggle("is-hidden", !isDhikrListOpen);
   elements.dhikrListPage.setAttribute("aria-hidden", String(!isDhikrListOpen));
+  elements.dhikrListPage.inert = isAddingDhikr;
   elements.progressPage.classList.toggle("is-hidden", !isProgressOpen);
   elements.progressPage.setAttribute("aria-hidden", String(!isProgressOpen));
   elements.learningPage.classList.toggle("is-hidden", !isLearningOpen);
@@ -717,19 +719,40 @@ function maybeNotifyAllDhikrCompleted() {
 
 function renderDhikrList() {
   const currentDhikrList = getDhikrList();
+  const scrollTop = elements.dhikrListBody.scrollTop;
   elements.dhikrListBody.replaceChildren();
+  if (!currentDhikrList.length) {
+    const empty = document.createElement("p");
+    empty.className = "dhikr-list-empty";
+    empty.textContent = "لا توجد أذكار";
+    elements.dhikrListBody.append(empty);
+    return;
+  }
 
   currentDhikrList.forEach((dhikr, index) => {
     const progress = state.progressByDhikr[dhikr.id] || { count: 0, target: defaultState.target, lapGoal: 1, laps: 0, total: 0 };
     const targetValue = Math.max(1, Number(progress.target) || defaultState.target);
     const item = document.createElement("article");
     item.className = `dhikr-list-item${index === state.dhikrIndex ? " is-current" : ""}`;
-    item.setAttribute("role", "button");
-    item.tabIndex = 0;
-
-    const title = document.createElement("span");
+    const header = document.createElement("div");
+    header.className = "dhikr-list-item-header";
+    const title = document.createElement("button");
+    title.type = "button";
     title.className = "dhikr-list-title";
     title.textContent = dhikr.title;
+    const remove = document.createElement("button");
+    remove.type = "button";
+    remove.className = "dhikr-tool-button delete-tool-button";
+    remove.textContent = "حذف";
+    remove.setAttribute("aria-label", `حذف ${dhikr.title}`);
+    remove.addEventListener("click", (event) => {
+      event.stopPropagation();
+      if (deleteDhikr(dhikr.id)) {
+        const titles = elements.dhikrListBody.querySelectorAll(".dhikr-list-title");
+        (titles[Math.min(index, titles.length - 1)] || elements.addDhikrFromList).focus({ preventScroll: true });
+      }
+    });
+    header.append(title, remove);
 
     const benefit = document.createElement("span");
     benefit.className = "dhikr-list-benefit";
@@ -767,26 +790,21 @@ function renderDhikrList() {
       setDhikrGoals(dhikr.id, formData.get("target"));
     });
 
-    item.append(title, benefit, meta, settings);
+    item.append(header);
+    if (dhikr.subtitle) item.append(benefit);
+    item.append(meta, settings);
     item.addEventListener("click", (event) => {
       if (event.target.closest(".dhikr-list-settings")) return;
+      event.stopPropagation();
       state.dhikrIndex = index;
       isDhikrListOpen = false;
       saveState();
       render();
+      elements.dhikrPanel.focus({ preventScroll: true });
     });
-    item.addEventListener("keydown", (event) => {
-      if (event.target.closest(".dhikr-list-settings")) return;
-      if (event.code !== "Space" && event.code !== "Enter") return;
-      event.preventDefault();
-      state.dhikrIndex = index;
-      isDhikrListOpen = false;
-      saveState();
-      render();
-    });
-
     elements.dhikrListBody.append(item);
   });
+  elements.dhikrListBody.scrollTop = scrollTop;
 }
 
 function giveFeedback() {
@@ -872,11 +890,13 @@ function toggleAddDhikrForm() {
 function openDhikrList() {
   isDhikrListOpen = true;
   render();
+  elements.addDhikrFromList.focus({ preventScroll: true });
 }
 
 function closeDhikrList() {
   isDhikrListOpen = false;
   render();
+  elements.dhikrPanel.focus({ preventScroll: true });
 }
 
 function openProgressPage() {
@@ -1051,23 +1071,22 @@ function closeAddDhikrForm() {
   isAddingDhikr = false;
   elements.customDhikrForm.reset();
   render();
+  (isDhikrListOpen ? elements.addDhikrFromList : elements.addDhikrToggle).focus();
 }
 
 function addCustomDhikr(title, benefit) {
   const trimmedTitle = title.trim();
   const trimmedBenefit = benefit.trim();
 
-  if (!trimmedTitle || !trimmedBenefit) return;
+  if (!trimmedTitle) return;
 
   const currentDhikrList = getDhikrList();
   const existingIndex = currentDhikrList.findIndex((dhikr) => dhikr.title === trimmedTitle);
 
   if (existingIndex >= 0) {
     state.dhikrIndex = existingIndex;
-    const customIndex = existingIndex - dhikrList.length;
-    if (customIndex >= 0) {
-      state.customDhikr[customIndex].subtitle = trimmedBenefit;
-    }
+    const custom = state.customDhikr.find((dhikr) => dhikr.id === currentDhikrList[existingIndex].id);
+    if (custom && trimmedBenefit) custom.subtitle = trimmedBenefit;
   } else {
     state.customDhikr.push({
       id: `custom-${Date.now()}`,
@@ -1082,13 +1101,17 @@ function addCustomDhikr(title, benefit) {
   isAddingDhikr = false;
   saveState();
   render();
+  if (isDhikrListOpen) {
+    elements.dhikrListBody.querySelector(".is-current")?.scrollIntoView({ block: "nearest" });
+    elements.addDhikrFromList.focus({ preventScroll: true });
+  }
 }
 
-function deleteCurrentDhikr() {
+function deleteDhikr(id) {
   const currentDhikrList = getDhikrList();
-  const dhikr = currentDhikrList[state.dhikrIndex];
-
-  if (!dhikr) return;
+  const dhikr = currentDhikrList.find((item) => item.id === id);
+  if (!dhikr || !window.confirm(`حذف «${dhikr.title}»؟ سيُحذف عداده الخاص أيضًا.`)) return false;
+  const selectedId = getCurrentDhikr()?.id;
 
   if (dhikrList.some((defaultDhikr) => defaultDhikr.id === dhikr.id)) {
     state.deletedDhikrIds.push(dhikr.id);
@@ -1101,9 +1124,11 @@ function deleteCurrentDhikr() {
   delete state.progressByDhikr[dhikr.id];
 
   const remainingDhikr = getDhikrList();
-  state.dhikrIndex = remainingDhikr.length > 0 ? Math.min(state.dhikrIndex, remainingDhikr.length - 1) : 0;
+  const selectedIndex = remainingDhikr.findIndex((item) => item.id === selectedId);
+  state.dhikrIndex = selectedIndex >= 0 ? selectedIndex : Math.max(0, Math.min(state.dhikrIndex, remainingDhikr.length - 1));
   saveState();
   render();
+  return true;
 }
 
 elements.tapButton.addEventListener("click", addCount);
@@ -1131,9 +1156,10 @@ elements.addDhikrToggle.addEventListener("click", (event) => {
   event.stopPropagation();
   toggleAddDhikrForm();
 });
+elements.addDhikrFromList.addEventListener("click", toggleAddDhikrForm);
 elements.deleteDhikrButton.addEventListener("click", (event) => {
   event.stopPropagation();
-  deleteCurrentDhikr();
+  deleteDhikr(getCurrentDhikr()?.id);
 });
 elements.closeDhikrModal.addEventListener("click", closeAddDhikrForm);
 elements.closeDhikrList.addEventListener("click", closeDhikrList);
@@ -1230,7 +1256,7 @@ document.addEventListener("keydown", (event) => {
     return;
   }
 
-  if (isLearningOpen) {
+  if (isLearningOpen || isDhikrListOpen || isAddingDhikr) {
     return;
   }
 

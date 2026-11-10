@@ -89,14 +89,14 @@
     </main>
 
     <div class="modal-overlay is-hidden" id="customDhikrModal" aria-hidden="true">
-      <form class="custom-dhikr-form modal-card" id="customDhikrForm">
+      <form class="custom-dhikr-form modal-card" id="customDhikrForm" role="dialog" aria-modal="true" aria-labelledby="customDhikrHeading">
         <div class="modal-header">
-          <h2>إضافة ذكر جديد</h2>
+          <h2 id="customDhikrHeading">إضافة ذكر جديد</h2>
           <button class="modal-close" id="closeDhikrModal" type="button" aria-label="إغلاق">×</button>
         </div>
         <label class="custom-dhikr-label" for="customDhikrInput">اكتب ذكر جديد</label>
-        <input id="customDhikrInput" type="text" maxlength="80" autocomplete="off" placeholder="مثال: سبحان الله وبحمده" />
-        <label class="custom-dhikr-label" for="customDhikrBenefitInput">فائدة الذكر</label>
+        <input id="customDhikrInput" type="text" maxlength="80" autocomplete="off" placeholder="مثال: سبحان الله وبحمده" required />
+        <label class="custom-dhikr-label" for="customDhikrBenefitInput">فائدة الذكر (اختياري)</label>
         <input id="customDhikrBenefitInput" type="text" maxlength="120" autocomplete="off" placeholder="اكتب فائدة الذكر" />
         <button class="add-dhikr-button" type="submit">حفظ الذكر</button>
       </form>
@@ -106,7 +106,10 @@
       <section class="dhikr-list-card">
         <div class="modal-header">
           <h2>كل الأذكار</h2>
-          <button class="modal-close" id="closeDhikrList" type="button" aria-label="إغلاق">×</button>
+          <div class="dhikr-list-actions">
+            <button class="dhikr-tool-button add-tool-button" id="addDhikrFromList" type="button">إضافة ذكر</button>
+            <button class="modal-close" id="closeDhikrList" type="button" aria-label="إغلاق">×</button>
+          </div>
         </div>
         <div class="dhikr-list-body" id="dhikrListBody"></div>
       </section>
