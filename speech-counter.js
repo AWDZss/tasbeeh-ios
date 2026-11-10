@@ -14,7 +14,7 @@
       this.seen = new Map();
     }
 
-    accept(transcript, segment) {
+    occurrences(transcript) {
       if (!this.phrase) return 0;
       const text = normalize(transcript);
       let count = 0;
@@ -22,6 +22,18 @@
       while ((cursor = text.indexOf(this.phrase, cursor)) !== -1) {
         count += 1;
         cursor += this.phrase.length;
+      }
+      return count;
+    }
+
+    accept(transcript, segment, alternatives = []) {
+      let count = this.occurrences(transcript);
+      // Use the first matching alternative only if the best transcript has no match.
+      if (!count && Array.isArray(alternatives)) {
+        for (const alternative of alternatives.slice(0, 3)) {
+          count = this.occurrences(alternative);
+          if (count) break;
+        }
       }
       const previous = this.seen.get(segment) || 0;
       this.seen.set(segment, Math.max(count, previous));
@@ -69,11 +81,11 @@
       await Promise.allSettled([stopNative, ...previousHandles.map((handle) => handle.remove())]);
     }
 
-    function receive(text, segment, final, ticket) {
+    function receive(text, segment, final, ticket, alternatives) {
       if (!active || ticket !== generation) return;
       const deliver = () => {
         if (!active || ticket !== generation || context()?.key !== current.key) return;
-        const amount = matcher.accept(text, segment);
+        const amount = matcher.accept(text, segment, final ? alternatives : undefined);
         if (amount) onCount(amount, current.key);
         if (active && ticket === generation) {
           report(amount ? "تم احتساب الذكر" : normalize(text).includes(matcher.phrase)
@@ -148,7 +160,7 @@
               if (ticket !== generation) return;
               // A cancelled native task may finish after a replacement task starts.
               if (event.session !== nativeSession) return;
-              receive(event.text, event.session, event.final, ticket);
+              receive(event.text, event.session, event.final, ticket, event.alternatives);
             }));
             nextHandles.push(await native.addListener("speechState", (event) => {
               if (ticket !== generation) return;

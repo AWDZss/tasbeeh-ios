@@ -1,4 +1,4 @@
-const cacheName = "tasbeeh-v34-native-voice-bridge";
+const cacheName = "tasbeeh-v35-voice-alternatives";
 const appShell = ["./", "./index.html", "./styles.css", "./app.js", "./speech-counter.js", "./manifest.webmanifest", "./icon.svg"];
 
 self.addEventListener("install", (event) => {

@@ -144,6 +144,14 @@ test('Native recognition errors show a diagnostic and turn listening off', async
   assert.match(last.message, /التعرف على الكلام/);
 });
 
+test('Alternatives recover a full phrase without summing competing transcripts', () => {
+  const matcher = new PhraseMatcher('الحمد لله');
+  assert.equal(matcher.accept('الحمد له', 'a', ['الحمد', 'الحمد لله', 'الحمد لله الحمد لله']), 1);
+  assert.equal(matcher.accept('الحمد لله', 'a'), 0);
+  assert.equal(matcher.accept('الحمد لله', 'b', ['الحمد لله الحمد لله']), 1);
+  assert.equal(matcher.accept('الله أكبر', 'c', ['الحمد', 'سبحان الله']), 0);
+});
+
 test('Injected Capacitor iOS bridge works without the npm registerPlugin helper', async () => {
   const native = mockNative();
   const capacitor = native.environment.Capacitor;
@@ -156,7 +164,8 @@ test('Injected Capacitor iOS bridge works without the npm registerPlugin helper'
     onCount: amount => counts.push(amount), onState: state => { last = state; } });
   await controller.start();
   assert.equal(last.active, true);
-  native.emit('transcript', { session: 's1', text: 'الحمد لله الحمد لله', final: true });
+  native.emit('transcript', { session: 's1', text: 'الحمد له الحمد له', final: true,
+    alternatives: ['الحمد لله الحمد لله'] });
   assert.deepEqual(counts, [2]);
   await controller.stop();
   assert.equal(last.active, false);

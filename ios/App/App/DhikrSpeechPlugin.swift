@@ -160,6 +160,7 @@ public class DhikrSpeechPlugin: CAPPlugin, CAPBridgedPlugin {
                     self.failures = 0
                     self.notifyListeners("transcript", data: [
                         "text": result.bestTranscription.formattedString,
+                        "alternatives": result.isFinal ? result.transcriptions.dropFirst().prefix(3).map { $0.formattedString } : [],
                         "session": sessionID, "final": result.isFinal
                     ])
                 }
